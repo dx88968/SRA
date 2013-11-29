@@ -49,6 +49,6 @@ if __name__ == '__main__':
     #print Lemmatizer.stem_words(tokenizer.tokenize(s))
     print Lemmatizer.lemmatize('chosen')
     stemmer = Stemmer()
-    print stemmer.stem('having')
+    print stemmer.stem_words(tokenizer.tokenize('having have a command line program in Python'))
     print time.time() - start_time, "seconds"
     
