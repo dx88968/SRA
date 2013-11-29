@@ -40,7 +40,7 @@ class plsaModeler(object):
         self.model[id]=vectors
         return
 
-    def run(self):
+    def train(self):
         rsl = []
         files = listdir(self.path)
         reader = InputData(self.dataset_type, self.path)
@@ -78,10 +78,11 @@ class plsaModeler(object):
 
 if __name__ == "__main__":
     basci = plsaModeler("beetle", "../SemEval/train/beetle/Core/")
-    basci.run()
+    basci.train()
     print basci.grade("BULB_C_VOLTAGE_EXPLAIN_WHY1","Terminal 1 and the positive terminal are separated by the gap")
     print basci.grade("BULB_C_VOLTAGE_EXPLAIN_WHY1","positive battery terminal is separated by a gap from terminal 1")
     print basci.grade("BULB_C_VOLTAGE_EXPLAIN_WHY1","the terminals are seperated")
+    print basci.grade("BULB_C_VOLTAGE_EXPLAIN_WHY1","Voltage is the difference between a positive and negative end on a battery.")
     #print basci.model
 
 

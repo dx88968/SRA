@@ -24,12 +24,6 @@ class WordnetSimilarity:
 
         return matrix
 
-    def applyWeight(self,matrix):
-        return
-
-
-
-
     def getScore(self,matrix,weight):
         if matrix==None or len(matrix)==0 or len(matrix[0])==0:
             return 0.0
@@ -64,4 +58,4 @@ class WordnetSimilarity:
 
 if __name__ == "__main__":
     ws=WordnetSimilarity()
-    print ws.getScore(ws.getSimilarityMatrix(["dog","animal"],["dog","is","animal"]),[0.1,0.9])
+    print ws.getScore(ws.getSimilarityMatrix(["good"],["bad"]),[1])
