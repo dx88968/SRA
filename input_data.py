@@ -33,36 +33,59 @@
 ##      the dictionary is
 ##          { 'id' -> question id,
 ##            'text' -> question text,
-##            'referenceAnswer' -> { 'id' -> reference answer id
-##                                   'text' -> reference answer text
-##                                 }
-##            'studentAnswers' -> [ 0 : { 'id' -> student answer id
-##                                        'accuracy' -> the accuracy for this reference answer
-##                                        'text' -> student answer text
-##                                      }
-##                                  1 : ...
-##                                ]
+##            'referenceAnswer' -> [ 0 : { 'id' -> reference answer id
+##                                         'text' -> reference answer text
+##                                         'studentAnswers' -> [ 0 : { 'id' -> student answer id
+##                                                                      'accuracy' -> the accuracy for this reference answer
+##                                                                      'text' -> student answer text
+##                                                                    }
+##                                                                1 : ...
+##                                                              ]
+##                                        }
+##                                  ]
+##            'otherStudentAnswers' -> [ 0 : { 'id' -> student answer id
+##                                             'accuracy' -> the accuracy for this reference answer
+##                                             'text' -> student answer text
+##                                           }
+##                                       1 : ...
+##                                     ]
 ##          }
 
-
+## In addition, the directory can be read with readDir
 
 import os
 from xml.etree import ElementTree
+from os import walk
+
+
 
 class InputData(object):
 
     def __init__(self, dataset, path = ''):
         self.path = path
-        self.question = {}
         self.dataset = dataset.lower()
+        if (self.dataset != 'beetle') and (self.dataset != 'seb'):
+            raise Exception("Wrong dataset")
+        self.questions = []
 
-    def readDict(self, dict_path = ''):
-        pass        
+    def readDir(self, dict_path = ''):
+        if self.path == '':
+            self.path = dict_path
+        if not os.path.isdir(self.path):
+            print 'Path not exist!'
+        else:  
+            file_name_list = []
+            for (dirpath, dirnames, filenames) in walk(self.path):
+                file_name_list.extend(filenames)
+                break
+
+            for file_name in file_name_list:
+                self.questions.append(self.readFile(file_name))
+            return self.questions
+                
 
     def readFile(self, file_name):
         # self.dataset = dataset.lower()
-        # I think one instance only for one kind dataset may be better
-        # or it will be a little confusing.
         self.file = file_name
         
         # reset question, let the instance resueable.
@@ -78,61 +101,10 @@ class InputData(object):
             
             if self.dataset == 'beetle':
                 return self._readBeetle()
-            elif self.dataset == "seb":
-                return self._readSeb()
             else:
-                raise Exception("Wrong dataset")
-    def read(self, file_name):
-        """
-            return general data structure for all data set
-            {
-                "text": question
-                "id": id
-                "references" = [
-                        {"text":reference
-                         "category": category
-                         "id":id
-                        }, ...]
-                "student_answers":[
-                        { "text": "",
-                          "id": id
-                          "accuracy":
-                        }, ...]
+                return self._readSeb()
+
             
-            }
-        """
-        self.readFile(file_name)
-        rsl = {}
-        if self.dataset == "beetle":
-            rsl["text"] = self.question["text"]
-            rsl["id"] = self.question["id"]
-            rsl["references"] = [ 
-                    {   "text":r["text"], 
-                        'category':r['category'], 
-                        "id":r["id"]} 
-                    for r in self.question["referenceAnswers"] ]
-            rsl["student_answers"] = []
-            for r in self.question["referenceAnswers"]:
-                for a in r["studentAnswers"]:
-                    rsl["student_answers"].append({
-                        "text":a["text"],
-                        "id":a["id"],
-                        "accuracy":a["accuracy"]})
-            for a in self.question["otherStudentAnswers"]:
-                rsl["student_answers"].append({
-                    "text":a["text"],
-                    "id":a["id"],
-                    "accuracy":a["accuracy"]})
-            return rsl
-        elif self.dataset == "seb":
-            rsl["text"] = self.question["text"]
-            rsl["id"] = self.question["id"]
-            rsl["references"] = [self.question["referenceAnswer"]]
-            rsl["references"][0]["category"] =""
-            rsl["student_answers"] = self.question["studentAnswers"]
-            return rsl
-        else:
-            raise Exception("Wrong dataset")
             
     def _readBeetle(self):
         self.question['referenceAnswers'] = []
@@ -155,7 +127,7 @@ class InputData(object):
                 elif key != 'count':
                     each_stu_ans[key] = value
             each_stu_ans['text'] = ans.text
-            if ans_id == None:                        
+            if (ans_id == None) or (each_stu_ans['accuracy'] != correct):                        
                 self.question['otherStudentAnswers'].append(each_stu_ans)
             else:
                 for index in range(len(self.question['referenceAnswers'])):
@@ -168,21 +140,29 @@ class InputData(object):
         return self.question
 
     def _readSeb(self):
-        self.question['referenceAnswer'] = {}
-        self.question['referenceAnswer']['id'] = self.root[1][0].attrib['id']
-        self.question['referenceAnswer']['text'] = self.root[1][0].text
-        self.question['studentAnswers'] = []
+        self.question['referenceAnswers'] = []
+        referenceAnswer = {}
+        referenceAnswer['id'] = self.root[1][0].attrib['id']
+        referenceAnswer['text'] = self.root[1][0].text
+        referenceAnswer['studentAnswers'] = []
+        self.question['otherStudentAnswers'] = []
         for ans in self.root[2]:
             each_stu_ans = {}
             for key, value in ans.attrib.items():
                 each_stu_ans[key] = value
             each_stu_ans['text'] = ans.text
-            self.question['studentAnswers'].append(each_stu_ans)
+            if each_stu_ans['accuracy'] == 'correct':
+                referenceAnswer['studentAnswers'].append(each_stu_ans)
+            else:
+                self.question['otherStudentAnswers'].append(each_stu_ans)
+        self.question['referenceAnswers'].append(referenceAnswer)
 
         #print len(self.question['studentAnswers'])
         return self.question
         
 # Testing code
 if __name__ == '__main__':
-    model = InputData("seb",'../SemEval/train/seb/Core/')
-    model.readFile('EM-inv1-45b.xml')
+    model = InputData('seb','../SemEval/train/seb/Core')
+    result = model.readDir()
+    print len(result)
+    
