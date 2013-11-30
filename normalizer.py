@@ -5,15 +5,24 @@ from nltk.tokenize import word_tokenize, sent_tokenize
 from nltk.corpus import stopwords
 from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.stem import PorterStemmer
+from spell_correct import SpellReplacer
 
 import time
 
 class Tokenizer(object):
+    def __init__(self):
+        self.replacer = SpellReplacer()
+        
     def tokenize(self, text):
-        text = text.translate(None, string.punctuation)
+        text = text.translate(None, string.punctuation).lower()
         tokens = [word for sent in sent_tokenize(text) for word in word_tokenize(sent)]
-        filtered_words = [w for w in tokens if not w.lower() in stopwords.words('english')]
-        return filtered_words
+        filtered_words = [w for w in tokens if not w in stopwords.words('english')]
+        corrected_words = []
+        for w in filtered_words:
+            neww = self.replacer.replace(w)
+            if neww != None:
+                corrected_words.append(neww)
+        return corrected_words
 
 class Stemmer(object):
     def __init__(self):
@@ -45,10 +54,7 @@ if __name__ == '__main__':
     start_time = time.time()
     Lemmatizer = Lemmatizer()
     tokenizer = Tokenizer()
-    s = 'I have a command line program in Python, that takes quite a while to finish. I want to know the exact time it takes to finish running.'
-    #print Lemmatizer.stem_words(tokenizer.tokenize(s))
-    print Lemmatizer.lemmatize('chosen')
-    stemmer = Stemmer()
-    print stemmer.stem_words(tokenizer.tokenize('having have a command line program in Python'))
+    s = 'I have a comsmand line program in Python, that takes quite a while to finish. I want to know the exact time it takes to finish running.'
+    print tokenizer.tokenize(s)
     print time.time() - start_time, "seconds"
     

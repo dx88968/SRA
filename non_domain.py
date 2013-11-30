@@ -13,7 +13,7 @@ class NonDomainClassfier(object):
         self.stemmer = Stemmer()
 
     def train(self, eachDict):
-        for each_ans in eachDict['student_answers']:
+        for each_ans in eachDict['otherStudentAnswers']:
             if each_ans['accuracy'] == 'non_domain':
                 self.add_dict(each_ans['text'])
 
@@ -39,24 +39,18 @@ class NonDomainClassfier(object):
                 return False
         return True
 
-def train_all(nonDomain, path):
-    model = InputData('seb', path)
-
-    file_names = []
-    for (dirpath, dirnames, filenames) in walk(path):
-        file_names.extend(filenames)
-        break
-    
-    for fn in file_names:
-        eachDict = model.read(fn)
-        nonDomain.train(eachDict)
+    def train_all(self, dictList):
+        for eachDict in dictList:
+            self.train(eachDict)
 
 if __name__ == '__main__':
     
-    path = '../SemEval/train/seb/Core/'
-    path2 = '../SemEval/train/beetle/Core/'
+    reader1 = InputData('seb', '../SemEval/train/seb/Core/')
+    dictList1 = reader1.readDir()
+    reader2 = InputData('beetle', '../SemEval/train/beetle/Core/')
+    dictList2 = reader2.readDir()
     nonDomain = NonDomainClassfier()
-    train_all(nonDomain, path)
-    train_all(nonDomain, path2)
-    print nonDomain.check('')
+    nonDomain.train_all(dictList1)
+    nonDomain.train_all(dictList2)
+    print len(nonDomain.wordDict)
 
