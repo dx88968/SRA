@@ -127,7 +127,7 @@ class InputData(object):
                 elif key != 'count':
                     each_stu_ans[key] = value
             each_stu_ans['text'] = ans.text
-            if (ans_id == None) or (each_stu_ans['accuracy'] != correct):                        
+            if (ans_id == None) or (each_stu_ans['accuracy'] != "correct"):
                 self.question['otherStudentAnswers'].append(each_stu_ans)
             else:
                 for index in range(len(self.question['referenceAnswers'])):

@@ -47,15 +47,17 @@ class plsaModeler(object):
         corpus = plsa.Corpus()
         for filename in files:
             vectors=[]
-            question = reader.read(filename)
+            question = reader.readFile(filename)
             id = question["id"]
-            for r in question["references"]:
+            for r in question["referenceAnswers"]:
                 rid=r["id"]
-                references=[]
+                references=[ sr["text"] for sr in r["studentAnswers"]]
+                """
                 for ans in question["student_answers"]:
                     if ans["id"]==rid:
                         references.append(ans["text"])
                 #references=[ self.stemmer.stem(sr["text"]) for sr in r["studentAnswers"]]
+                """
                 references.append(r["text"])
                 corpus.addBaseline(references)
                 #print corpus.getVector()
@@ -68,6 +70,7 @@ class plsaModeler(object):
 
     def grade(self,qid,answer):
         max_score=0.0
+        print self.model[qid]
         for vector in self.model[qid]:
             score=self.ws.getScore(self.ws.getSimilarityMatrix(vector[0],tokenizer.tokenize(answer)),vector[1])
             if score>max_score:
