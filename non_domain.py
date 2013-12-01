@@ -27,7 +27,7 @@ class NonDomainClassfier(object):
                 else:
                     self.wordDict[token] = 1
 
-    def check(self, text):
+    def test(self, text):
         tokens = []
         for raw_token in self.tokenizer.tokenize(text):
             token = self.spellReplacer.replace(raw_token)
@@ -43,14 +43,14 @@ class NonDomainClassfier(object):
         for eachDict in dictList:
             self.train(eachDict)
 
+    def train_dir(self, dataset, path):
+        reader = InputData(dataset, path)
+        dictList = reader.readDir()
+        self.train_all(dictList)
+
 if __name__ == '__main__':
-    
-    reader1 = InputData('seb', '../SemEval/train/seb/Core/')
-    dictList1 = reader1.readDir()
-    reader2 = InputData('beetle', '../SemEval/train/beetle/Core/')
-    dictList2 = reader2.readDir()
     nonDomain = NonDomainClassfier()
-    nonDomain.train_all(dictList1)
-    nonDomain.train_all(dictList2)
-    print len(nonDomain.wordDict)
+    nonDomain.train_dir('seb', '../SemEval/train/seb/Core/')
+    nonDomain.train_all('beetle', '../SemEval/train/beetle/Core/')
+    print nonDomain.test("I don't know")
 
