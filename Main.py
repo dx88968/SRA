@@ -27,7 +27,7 @@ class SRA:
             self.nonDomain.train_dir('seb', '../SemEval/train/seb/Core/')
             self.modeler=plsaModeler('seb', '../SemEval/train/seb/Core/')
         else:
-            self.nonDomain.train_all('beetle', '../SemEval/train/beetle/Core/')
+            self.nonDomain.train_dir('beetle', '../SemEval/train/beetle/Core/')
             self.modeler=plsaModeler("beetle", "../SemEval/train/beetle/Core/")
 
         self.modeler.train()
@@ -42,27 +42,33 @@ class SRA:
         for filename in files:
             question = reader.readFile(filename)
             id = question["id"]
-            for r in question["referenceAnswers"]:
-                grade=""
+            stuAns = []
+            for r in question["referenceAnswers"]:   
                 for sr in r["studentAnswers"]:
-                    if self.nonDomain.test(sr["text"]):
-                        if mode==2 or mode==3:
-                            grade="incorrect"
-                        if mode==5:
-                            grade=="non_domain"
-                        rsl.append({"id": sr["id"],"Accuracy":sr["accuracy"],"Predicted":grade})
-
-                        """
-                    handle not
-
-
-                    """
-
-                    score=self.modeler.grade(id,sr["text"])
-                    grade=self.predict(score)
+                    stuAns.append(sr)
+            for sr in question["otherStudentAnswers"]:
+                stuAns.append(sr)
+                
+            for sr in stuAns:
+                grade=""
+                if not self.nonDomain.test(sr["text"]):
+                    if mode==2 or mode==3:
+                        grade="incorrect"
+                    if mode==5:
+                        grade=="non_domain"
                     rsl.append({"id": sr["id"],"Accuracy":sr["accuracy"],"Predicted":grade})
 
-            output(self.output_filename, head, rsl)
+                    """
+                handle not
+
+
+                """
+
+                score=self.modeler.grade(id,sr["text"])
+                grade=self.predict(score)
+                rsl.append({"id": sr["id"],"Accuracy":sr["accuracy"],"Predicted":grade})
+            
+            output(outputdir, head, rsl)
 
 
     def predict(self, points):
