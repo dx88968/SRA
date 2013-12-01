@@ -29,17 +29,6 @@ class plsaModeler(object):
         self.ws=WordnetSimilarity()
 
 
-    def addQuestion(self,id,answerGroups):
-        vectors=[]
-        corpus = plsa.Corpus()
-        for answerGroup in answerGroups:
-            corpus.addBaseline(answerGroup)
-            vectors.append(corpus.getVector())
-            corpus.reset()
-
-        self.model[id]=vectors
-        return
-
     def train(self):
         rsl = []
         files = listdir(self.path)
