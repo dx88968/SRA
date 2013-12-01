@@ -230,38 +230,3 @@ class Corpus(object):
 
 
 
-
-    def grading(self,target):
-        if not self.ready:
-            return np.zeros(len(self.ref_topic_prob), dtype = np.float)
-        #print self.topic_prob
-        t=Reference(target)
-        term_count = np.zeros(len(self.vocabulary), dtype = np.int)
-        ecount=0
-        for word in t.words:
-            if word in self.vocabulary:
-                try:
-                    w_index = self.vocabulary.index(word)
-                    term_count[w_index] = term_count[w_index] + 1
-                    ecount=ecount+1
-                except:
-                    continue
-
-        if ecount==0:
-            return np.zeros(len(self.ref_topic_prob), dtype = np.float)
-
-        scores=[]
-
-        print self.ref_topic_prob
-        print self.topic_word_prob
-
-        for i in range(0,len(self.ref_topic_prob)):
-            score=0.0
-            for j in range(0,len(self.ref_topic_prob[0])):
-                weight=self.ref_topic_prob[i,j]
-                score=score+weight*self.sim(self.topic_word_prob[j],term_count)
-
-            scores.append(score)
-
-        return scores
-
