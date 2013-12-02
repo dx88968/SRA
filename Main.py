@@ -5,6 +5,7 @@ from plsaModeler import plsaModeler
 from input_data import InputData
 from os import listdir
 from output import output
+from contradictory import ContradictoryClassfier
 
 class SRA:
     def __init__(self):
@@ -16,13 +17,15 @@ class SRA:
         """
         self.modes={
                 2: [0.75],
-                3: [0.35, 0.75],
-                5: [0, 0.25, 0.5, 0.75]
+                3: [0.75],
+                5: [0.4, 0.75]
         }
+        self.contradict=ContradictoryClassfier()
+        self.nonDomain = NonDomainClassfier()
 
     def train(self,datamode,directory):
         self.dataset_type=datamode
-        self.nonDomain = NonDomainClassfier()
+
         if datamode=="seb":
             self.nonDomain.train_dir('seb', '../SemEval/train/seb/Core/')
             self.modeler=plsaModeler('seb', '../SemEval/train/seb/Core/')
@@ -51,50 +54,66 @@ class SRA:
                 
             for sr in stuAns:
                 grade=""
-                if not self.nonDomain.test(sr["text"]):
+                if self.nonDomain.test(sr["text"]):
                     if mode==2 or mode==3:
                         grade="incorrect"
                     if mode==5:
-                        grade=="non_domain"
+                        grade="non_domain"
                     rsl.append({"id": sr["id"],"Accuracy":sr["accuracy"],"Predicted":grade})
+                    print rsl[len(rsl)-1]
+                    continue
 
-                    """
-                handle not
-
+                """
+                if self.contradict.isContradictory(self.modeler.getReferences(id),sr["text"]):
+                    if mode==2:
+                        grade="incorrect"
+                    if mode==3 or mode==5:
+                        grade="contradictory"
+                    rsl.append({"id": sr["id"],"Accuracy":sr["accuracy"],"Predicted":grade})
+                    print rsl[len(rsl)-1]
+                    continue
 
                 """
 
                 score=self.modeler.grade(id,sr["text"])
                 grade=self.predict(score)
                 rsl.append({"id": sr["id"],"Accuracy":sr["accuracy"],"Predicted":grade})
+                print rsl[len(rsl)-1]
             
             output(outputdir, head, rsl)
 
 
-    def predict(self, points):
+    def predict(self, point):
         """
             convert points to an text grade based on mode
             points = []
         """
         way2 = ["incorrect", "correct"]
-        way3 = ["incorrect", "contradictory", "correct"]
-        way5 = ["non_domain", "irrelevant", "contradictory",
+        way3 = ["incorrect", "correct"]
+        way5 = ["irrelevant",
                 "partially_correct_incomplete", "correct"]
-        point = max(points)
         if self.mode == 2:
             if point < self.modes[2][0]:
                 return way2[0]
             else:
                 return way2[1]
         elif self.mode == 3:
-            for i in range(2):
-                if point < self.modes[3][i]:
-                    return way3[i]
-            return way3[2]
+            if point < self.modes[3][0]:
+                return way3[0]
+            else:
+                return way3[1]
         elif self.mode == 5:
-            for i in range(4):
+            for i in range(2):
                 if point < self.modes[5][i]:
                     return way5[i]
-            return way5[4]
+            return way5[2]
         else:
             raise Exception("Wrong mode")
+
+if __name__ == "__main__":
+    sra=SRA()
+    print "start training"
+    sra.train("beetle", "../SemEval/train/beetle/Core/")
+    print "training complete"
+    sra.test(5,"../SemEval/train/beetle/Core/","output")
+

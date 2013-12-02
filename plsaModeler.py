@@ -26,6 +26,7 @@ class plsaModeler(object):
         self.dataset_type = dataset_type
         self.path = path
         self.model={}
+        self.data={}
         self.ws=WordnetSimilarity()
 
 
@@ -38,6 +39,7 @@ class plsaModeler(object):
             vectors=[]
             question = reader.readFile(filename)
             id = question["id"]
+            self.data[id]=[ref["text"] for ref in question["referenceAnswers"]]
             for r in question["referenceAnswers"]:
                 rid=r["id"]
                 references=[ sr["text"] for sr in r["studentAnswers"]]
@@ -59,13 +61,17 @@ class plsaModeler(object):
 
     def grade(self,qid,answer):
         max_score=0.0
-        print self.model[qid]
+        #print self.model[qid]
         for vector in self.model[qid]:
             score=self.ws.getScore(self.ws.getSimilarityMatrix(vector[0],tokenizer.tokenize(answer)),vector[1])
             if score>max_score:
                 max_score=score
 
+        print "score is %s"%max_score
         return max_score
+
+    def getReferences(self,qid):
+        return self.data.get(qid,[])
 
 
 if __name__ == "__main__":
