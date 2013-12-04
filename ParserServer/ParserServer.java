@@ -1,7 +1,9 @@
 //package mynlp.stanfordparser;
 
 import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 import java.io.StringReader;
 
 import py4j.GatewayServer;
@@ -14,6 +16,7 @@ import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.ling.Sentence;
 import edu.stanford.nlp.trees.*;
 import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
+import edu.stanford.nlp.ling.TaggedWord;
 
 class ParserServer {
 
@@ -41,9 +44,16 @@ class ParserServer {
       tokenizerFactory.getTokenizer(new StringReader(sentence)).tokenize();
     parse = lp.apply(rawWords2);
 
+    ArrayList<TaggedWord> list = parse.taggedYield();
+      for(int i=0; i< list.size(); i++){
+          rtl += list.get(i).value();
+          rtl += "///" ;
+          rtl += list.get(i).tag();
+          rtl += "|||";
+      }
 
-    rtl += parse.taggedYield();
-    rtl += "@";
+    //rtl += parse.taggedYield();
+    rtl += "@@@@@@";
 
 
     
@@ -52,8 +62,17 @@ class ParserServer {
     
     GrammaticalStructure gs = gsf.newGrammaticalStructure(parse);
     Collection<TypedDependency> td = gs.typedDependenciesCollapsed();
-    System.out.println(td);
-    rtl += td.toString();
+      
+    Iterator itr = td.iterator();
+      while(itr.hasNext()){
+          TypedDependency itd = (TypedDependency)itr.next();
+          rtl += itd.reln().toString();
+          rtl += "///";
+          rtl += itd.gov().toString();
+          rtl += "///";
+          rtl += itd.dep().toString();
+          rtl += "|||";
+      }
     
     return rtl;
   }

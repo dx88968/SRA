@@ -9,24 +9,40 @@ class Parser(object):
         self.gateway = JavaGateway()
     
     def parser(self, sentence):
-        rsl = self.gateway.parser(sentence).split("@")
-        tagstr = rsl[0][1:-1]
-        typed_dependencies = rsl[1][1:-2]
+        rsl = self.gateway.parser(sentence).split("@@@@@@")
+        tagstr = rsl[0]
+        typed_dependencies = rsl[1]
         
         tags = []
-        for pair in tagstr.split(", "):
-            (k,v) = pair.strip().split("/")
+        for pair in tagstr.split("|||"):
+            if pair == '':
+                continue
+            (k,v) = pair.strip().split("///")
             tags.append( [k, v] )
 
         typedd = []
-        for pair in typed_dependencies.split("), "):
-            (d,c) = pair.strip().split("(")
-            (c1,c2) = c.split(",")
-            (c1w, c1i) = c1.split("-")
-            (c2w, c2i) = c2.split("-")
+        for pair in typed_dependencies.split("|||"):
+            if pair == '':
+                continue
+            (r,g,v) = pair.strip().split("///")
+            
+            gg = g.split("-")
+            if len(gg) >= 3:
+                gw = "-".join(gg[0:-1])
+            else:
+                gw = gg[0]
+            gi = gg[-1]
+
+            vv = v.split("-")
+            if len(vv) >= 3:
+                vw = "-".join(vv[0:-1])
+            else:
+                vw = vv[0]
+            vi = vv[-1]
+
             typedd.append(
-                    (d, (c1w, int(c1i) - 1),
-                        (c2w, int(c2i) - 1)))
+                    (r, (gw, int(gi) - 1),
+                        (vw, int(vi) - 1)))
         return (tags, typedd)
 
         
