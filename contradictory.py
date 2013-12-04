@@ -10,7 +10,7 @@ stemmer=Stemmer()
 tokenizer = Tokenizer()
 antonymer = HandleAntonym()
 ws=WordnetSimilarity()
-threshold=0.7
+threshold=0.9
 
 class ContradictoryClassfier:
 
@@ -18,18 +18,26 @@ class ContradictoryClassfier:
         return
 
     def isContradictory(self,references,answer):
-        score=0.0
         temp=antonymer.isNeg(answer)
         answer=temp[1]
         aflag=temp[0]
         for r in references:
             temp=antonymer.isNeg(r)
-            r=temp[1]
             rflag=temp[0]
-            nsflag,newanswer=self.antonymReplacer(r,answer)
-            if (aflag==rflag) != nsflag:
-                if ws.getScoreWithoutWeight(ws.getSimilarityMatrix(tokenizer.tokenize(r),newanswer))>threshold:
-                    return True
+            nsflag,newanswer=self.antonymReplacer(temp[1],answer)
+            if nsflag:
+                aflag=not aflag
+
+            flag4=False
+            if ws.getScoreWithoutWeight(ws.getSimilarityMatrix(tokenizer.tokenize(temp[1]),newanswer))>threshold:
+                flag4=True
+
+            if ((aflag!=rflag) and flag4):
+                print "%s\n------------------------------------------\n%s"%(r,answer)
+                return True
+
+            if nsflag:
+                aflag=not aflag
 
         return False
 
@@ -40,7 +48,7 @@ class ContradictoryClassfier:
 
         rWordSet=set([stemmer.stem(w) for w in rWords])
 
-        flag=True
+        flag=False
         newAnswer=[]
 
         for word in aWords:
@@ -48,14 +56,22 @@ class ContradictoryClassfier:
                 newAnswer.append(word)
                 continue
 
-            for rw in rWords:
-                if isantonym(word,rw):
-                    newAnswer.append(rw)
-                    flag=not flag
-                    break
+            an=self.findAntonym(word,rWords)
+            if an==None:
+                newAnswer.append(word)
+            else:
+                newAnswer.append(an)
+                flag=not flag
 
         return flag,newAnswer
 
+    def findAntonym(self,word,targets):
+        for rw in targets:
+            if isantonym(word,rw):
+                return rw
+
+        return None
+
 if __name__ == "__main__":
     c=ContradictoryClassfier()
-    print c.isContradictory(["terminal 1 is connected to the negative battery terminal"],"The voltage is 1.5 because thebulb terminal is connected to the battery terminal")
+    print c.isContradictory(["terminal 1 is not separated from the negative battery terminal"],"positive battery terminal is separated by a gap from terminal 1")

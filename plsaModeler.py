@@ -18,11 +18,6 @@ class plsaModeler(object):
             mode: 2, 3 or 5
             output_filename: "filename"
         """
-        self.modes={
-                2: [0.75],
-                3: [0.40, 0.75],
-                5: [0.1, 0.15, 0.20, 0.30]
-                }
         self.dataset_type = dataset_type
         self.path = path
         self.model={}

@@ -15,11 +15,7 @@ class SRA:
             mode: 2, 3 or 5
             output_filename: "filename"
         """
-        self.modes={
-                2: [0.75],
-                3: [0.75],
-                5: [0.4, 0.75]
-        }
+
         self.contradict=ContradictoryClassfier()
         self.nonDomain = NonDomainClassfier()
 
@@ -29,9 +25,19 @@ class SRA:
         if datamode=="seb":
             self.nonDomain.train_dir('seb', '../SemEval/train/seb/Core/')
             self.modeler=plsaModeler('seb', '../SemEval/train/seb/Core/')
+            self.modes={
+                2: [0.6],
+                3: [0.6],
+                5: [0.4, 0.6]
+            }
         else:
             self.nonDomain.train_dir('beetle', '../SemEval/train/beetle/Core/')
             self.modeler=plsaModeler("beetle", "../SemEval/train/beetle/Core/")
+            self.modes={
+                2: [0.75],
+                3: [0.75],
+                5: [0.4, 0.75]
+            }
 
         self.modeler.train()
 
@@ -63,7 +69,6 @@ class SRA:
                     print rsl[len(rsl)-1]
                     continue
 
-                """
                 if self.contradict.isContradictory(self.modeler.getReferences(id),sr["text"]):
                     if mode==2:
                         grade="incorrect"
@@ -73,7 +78,7 @@ class SRA:
                     print rsl[len(rsl)-1]
                     continue
 
-                """
+
 
                 score=self.modeler.grade(id,sr["text"])
                 grade=self.predict(score)
