@@ -40,9 +40,12 @@ class Parser(object):
                 vw = vv[0]
             vi = vv[-1]
 
-            typedd.append(
-                    (r, (gw, int(gi) - 1),
-                        (vw, int(vi) - 1)))
+            try:
+                typedd.append(
+                        (r, (gw, int(gi) - 1),
+                            (vw, int(vi) - 1)))
+            except:
+                typedd.append((r, (gw,1), (vw, 1)))
         return (tags, typedd)
 
         
