@@ -20,7 +20,7 @@ class NonDomainClassfier(object):
     def add_dict(self, text):
         for raw_token in self.tokenizer.tokenize(text):
             token = self.spellReplacer.replace(raw_token)
-            if  token != None:
+            if  (token != None) and (token != 'gap'):
                 token = self.stemmer.stem(token)
                 if token in self.wordDict:
                     self.wordDict[token] += 1
@@ -52,5 +52,5 @@ if __name__ == '__main__':
     nonDomain = NonDomainClassfier()
     nonDomain.train_dir('seb', '../SemEval/train/seb/Core/')
     nonDomain.train_all('beetle', '../SemEval/train/beetle/Core/')
-    print nonDomain.test("I don't know")
+    print nonDomain.test("there was a gap")
 
