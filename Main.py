@@ -7,6 +7,7 @@ from os import listdir
 from output import output
 from contradictory import ContradictoryClassfier
 from ContradictoryBigram import ContradictoryBigram
+import sys
 
 class SRA:
     def __init__(self):
@@ -25,16 +26,16 @@ class SRA:
         self.dataset_type=datamode
 
         if datamode=="seb":
-            self.nonDomain.train_dir('seb', '../SemEval/train/seb/Core/')
-            self.modeler=plsaModeler('seb', '../SemEval/train/seb/Core/')
+            self.nonDomain.train_dir('seb', directory)
+            self.modeler=plsaModeler('seb', directory)
             self.modes={
                 2: [0.6],
                 3: [0.6],
                 5: [0.4, 0.6]
             }
         else:
-            self.nonDomain.train_dir('beetle', '../SemEval/train/beetle/Core/')
-            self.modeler=plsaModeler("beetle", "../SemEval/train/beetle/Core/")
+            self.nonDomain.train_dir('beetle', directory)
+            self.modeler=plsaModeler("beetle", directory)
             self.modes={
                 2: [0.7],
                 3: [0.7],
@@ -117,10 +118,27 @@ class SRA:
         else:
             raise Exception("Wrong mode")
 
-if __name__ == "__main__":
+def main():
+    argv = sys.argv
+    
+    if len(argv) != 6:
+        print "Wrong Parameters!"
+        print "Main.py dataset n-way trainingDir testDir output"
+        return
+    (dataset, n, train, test, output) = argv[1:]
+    if(dataset not in ["beetle", "seb"]):
+        print "dataset only can be beetle or seb"
+        return 
+    if(n not in ('2', '3', '5')):
+        print "n-way must be 2,3 or 5"
+        return
+
     sra=SRA()
     print "start training"
-    sra.train("beetle", "../SemEval/train/beetle/Core/")
+    sra.train(dataset, train)
     print "training complete"
-    sra.test(5,"../SemEval/train/beetle/Core/","output")
+    sra.test(int(n), test, output)
+
+if __name__ == "__main__":
+    main()
 
