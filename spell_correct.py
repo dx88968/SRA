@@ -18,6 +18,9 @@ class SpellReplacer(object):
             return self.edits1(word.lower())
 
     def edits1(self, word):
+        if self.spell_dict.check(word.capitalize()):
+            return word.capitalize()
+        
         change = []
         
         splits     = [(word[:i], word[i:]) for i in range(len(word) + 1)]
