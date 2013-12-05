@@ -7,6 +7,7 @@ from os import listdir
 from output import output
 from contradictory import ContradictoryClassfier
 from ContradictoryBigram import ContradictoryBigram
+from IrrelevantDetector import IrrelevantDetector
 import sys
 
 class SRA:
@@ -21,6 +22,7 @@ class SRA:
         self.contradict=ContradictoryClassfier()
         self.nonDomain = NonDomainClassfier()
         self.contradictBigram=ContradictoryBigram()
+        self.irr=IrrelevantDetector()
 
     def train(self,datamode,directory):
         self.dataset_type=datamode
@@ -29,9 +31,9 @@ class SRA:
             self.nonDomain.train_dir('seb', directory)
             self.modeler=plsaModeler('seb', directory)
             self.modes={
-                2: [0.6],
-                3: [0.6],
-                5: [0.4, 0.6]
+                2: [0.45],
+                3: [0.45],
+                5: [0.45]
             }
         else:
             self.nonDomain.train_dir('beetle', directory)
@@ -39,7 +41,7 @@ class SRA:
             self.modes={
                 2: [0.5],
                 3: [0.5],
-                5: [0.4, 0.5]
+                5: [0.5]
             }
         self.contradictBigram.load(datamode,directory)
         self.modeler.train()
@@ -81,7 +83,13 @@ class SRA:
                     print rsl[len(rsl)-1]
                     continue
 
-
+                self.irr.build(self.modeler.getReferences(id))
+                if self.irr.isIrrelevent(sr["text"]):
+                    if mode==2 or mode==3:
+                        grade="incorrect"
+                    if mode==5:
+                        grade="irrelevant"
+                    rsl.append({"id": sr["id"],"Accuracy":sr["accuracy"],"Predicted":grade,"grade":"NA"})
 
                 score=self.modeler.grade(id,sr["text"])
                 grade=self.predict(score)
@@ -98,8 +106,7 @@ class SRA:
         """
         way2 = ["incorrect", "correct"]
         way3 = ["incorrect", "correct"]
-        way5 = ["irrelevant",
-                "partially_correct_incomplete", "correct"]
+        way5 = ["partially_correct_incomplete", "correct"]
         if self.mode == 2:
             if point < self.modes[2][0]:
                 return way2[0]
@@ -111,10 +118,10 @@ class SRA:
             else:
                 return way3[1]
         elif self.mode == 5:
-            for i in range(2):
-                if point < self.modes[5][i]:
-                    return way5[i]
-            return way5[2]
+            if point < self.modes[5][0]:
+                return way5[0]
+            else:
+                return way5[1]
         else:
             raise Exception("Wrong mode")
 
