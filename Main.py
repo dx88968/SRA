@@ -128,11 +128,15 @@ class SRA:
 def main():
     argv = sys.argv
     
-    if len(argv) != 6:
+    if len(argv) == 1:
+        print "Using default parameters"
+        (dataset, n, train, test, output) = ('seb', '5', "../SemEval/train/seb/Core/","../SemEval/train/seb/Core/","output")
+    elif len(argv) != 6:
         print "Wrong Parameters!"
         print "Main.py dataset n-way trainingDir testDir output"
         return
-    (dataset, n, train, test, output) = argv[1:]
+    else:
+        (dataset, n, train, test, output) = argv[1:]
     if(dataset not in ["beetle", "seb"]):
         print "dataset only can be beetle or seb"
         return 
