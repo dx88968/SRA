@@ -9,6 +9,6 @@ def output(file_name, head, out):
     f = open(file_name, "w")
     f.write("%s\n" % "\t".join(head))
     for item in out:
-        o = [item[k] for k in head]
+        o = [str(item[k]) for k in head]
         f.write("%s\n" % "\t".join(o))
     f.close()

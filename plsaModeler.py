@@ -5,6 +5,7 @@ from input_data import InputData
 import plsa
 from WordNetSimilarity import WordnetSimilarity
 from normalizer import Tokenizer
+
 #from output import output
 #import parsers
 
@@ -23,6 +24,7 @@ class plsaModeler(object):
         self.model={}
         self.data={}
         self.ws=WordnetSimilarity()
+
 
 
     def train(self):

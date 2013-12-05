@@ -6,6 +6,7 @@ from input_data import InputData
 from os import listdir
 from output import output
 from contradictory import ContradictoryClassfier
+from ContradictoryBigram import ContradictoryBigram
 
 class SRA:
     def __init__(self):
@@ -18,6 +19,7 @@ class SRA:
 
         self.contradict=ContradictoryClassfier()
         self.nonDomain = NonDomainClassfier()
+        self.contradictBigram=ContradictoryBigram()
 
     def train(self,datamode,directory):
         self.dataset_type=datamode
@@ -34,16 +36,16 @@ class SRA:
             self.nonDomain.train_dir('beetle', '../SemEval/train/beetle/Core/')
             self.modeler=plsaModeler("beetle", "../SemEval/train/beetle/Core/")
             self.modes={
-                2: [0.75],
-                3: [0.75],
-                5: [0.4, 0.75]
+                2: [0.7],
+                3: [0.7],
+                5: [0.4, 0.7]
             }
-
+        self.contradictBigram.load(datamode,directory)
         self.modeler.train()
 
     #mode indicates if it uses 2-way,3-way or 5-way
     def test(self,mode,inputdir,outputdir):
-        head = ["id","Accuracy", "Predicted"]
+        head = ["id","grade" ,"Accuracy","Predicted"]
         self.mode=mode
         rsl=[]
         files = listdir(inputdir)
@@ -65,16 +67,16 @@ class SRA:
                         grade="incorrect"
                     if mode==5:
                         grade="non_domain"
-                    rsl.append({"id": sr["id"],"Accuracy":sr["accuracy"],"Predicted":grade})
+                    rsl.append({"id": sr["id"],"Accuracy":sr["accuracy"],"Predicted":grade,"grade":"NA"})
                     print rsl[len(rsl)-1]
                     continue
 
-                if self.contradict.isContradictory(self.modeler.getReferences(id),sr["text"]):
+                if self.contradictBigram.isContradictory(id,sr["text"]) or self.contradict.isContradictory(self.modeler.getReferences(id),sr["text"]):
                     if mode==2:
                         grade="incorrect"
                     if mode==3 or mode==5:
                         grade="contradictory"
-                    rsl.append({"id": sr["id"],"Accuracy":sr["accuracy"],"Predicted":grade})
+                    rsl.append({"id": sr["id"],"Accuracy":sr["accuracy"],"Predicted":grade,"grade":"NA"})
                     print rsl[len(rsl)-1]
                     continue
 
@@ -82,7 +84,7 @@ class SRA:
 
                 score=self.modeler.grade(id,sr["text"])
                 grade=self.predict(score)
-                rsl.append({"id": sr["id"],"Accuracy":sr["accuracy"],"Predicted":grade})
+                rsl.append({"id": sr["id"],"Accuracy":sr["accuracy"],"Predicted":grade,"grade":score})
                 print rsl[len(rsl)-1]
             
             output(outputdir, head, rsl)
