@@ -37,9 +37,9 @@ class SRA:
             self.nonDomain.train_dir('beetle', directory)
             self.modeler=plsaModeler("beetle", directory)
             self.modes={
-                2: [0.7],
-                3: [0.7],
-                5: [0.4, 0.7]
+                2: [0.5],
+                3: [0.5],
+                5: [0.4, 0.5]
             }
         self.contradictBigram.load(datamode,directory)
         self.modeler.train()
