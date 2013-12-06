@@ -85,7 +85,7 @@ class SRA:
                     continue
 
                 score=self.modeler.grade(id,sr["text"])
-                if self.datamode=="seb":
+                if self.datamode== "beetle":
                     self.irr.build(self.modeler.getReferences(id))
                     if self.irr.isIrrelevent(sr["text"]):
                         score=-1
