@@ -1,11 +1,16 @@
 #NLP
+##Members
+* Pengfei Li
+* Xun Xu
+* Guanhua Chen
 
 ##Running on our Server
 
 We have depolied the code on an ubuntu server, you can upload the data via sftp to the server and run it.
 
-  * sftp -P @aurora.cadmuxe.com 
-  * ssh -p @aurora.cadmuxe.com
+  * sftp -P 49153 nlp@**.com 
+  * ssh -p 49153 nlp@**.com
+  * passwd is : nlp
   * python Main.py dataset_type n-way train_data_path test_data_path output_file
 
 
