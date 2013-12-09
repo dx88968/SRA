@@ -1,0 +1,415 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 1
+\use_mathdots 1
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Part*
+1.
+ Input Reader, Text Normalization, Spell Check and Non-domain check
+\end_layout
+
+\begin_layout Section*
+1.1 Input Data
+\end_layout
+
+\begin_layout Standard
+All input data is read by InputData model.
+ Each file (beetle/seb) is stored in a dictionary.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+the dictionary is 
+\end_layout
+
+\begin_layout Plain Layout
+
+## { 'id' -> question id, 
+\end_layout
+
+\begin_layout Plain Layout
+
+##   'text' -> question text, 
+\end_layout
+
+\begin_layout Plain Layout
+
+##   'referenceAnswers' 
+\end_layout
+
+\begin_layout Plain Layout
+
+##        -> [ 0 : { 'id' -> reference answer id 
+\end_layout
+
+\begin_layout Plain Layout
+
+##                   'category' -> reference answer category(Best/Minimal)
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+##                   'text' -> reference answer text 
+\end_layout
+
+\begin_layout Plain Layout
+
+##                   'studentAnswers' 
+\end_layout
+
+\begin_layout Plain Layout
+
+##                        -> [ 0 : { 'id' -> student answer id 
+\end_layout
+
+\begin_layout Plain Layout
+
+##                                   'accuracy' -> the accuracy for this
+ reference answer 
+\end_layout
+
+\begin_layout Plain Layout
+
+##                                   'text' -> student answer text 
+\end_layout
+
+\begin_layout Plain Layout
+
+##                                 } 
+\end_layout
+
+\begin_layout Plain Layout
+
+##                             1 : ...
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+##                                                              ] 
+\end_layout
+
+\begin_layout Plain Layout
+
+##                  } 
+\end_layout
+
+\begin_layout Plain Layout
+
+##              1 : ...
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+##           ] 
+\end_layout
+
+\begin_layout Plain Layout
+
+##   'otherStudentAnswers' 
+\end_layout
+
+\begin_layout Plain Layout
+
+##        -> [ 0 : { 'id' -> student answer id 
+\end_layout
+
+\begin_layout Plain Layout
+
+##                   'accuracy' -> the accuracy for this reference answer
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+##                   'text' -> student answer text 
+\end_layout
+
+\begin_layout Plain Layout
+
+##                 } 
+\end_layout
+
+\begin_layout Plain Layout
+
+##             1 : ...
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+##           ] 
+\end_layout
+
+\begin_layout Plain Layout
+
+## }
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+1.2 Text Normalization
+\end_layout
+
+\begin_layout Subsubsection*
+1.2.1 Tokenize
+\end_layout
+
+\begin_layout Standard
+Stopwords and pronounciation should be removed before the train model.
+ Here we use NLTK stopwords corpus and tokenizer package to do this.
+ 
+\end_layout
+
+\begin_layout Subsubsection*
+1.2.2 Stem/Lemmatize
+\end_layout
+
+\begin_layout Standard
+Stem or Lemmatize should be applied before building word matrix as well
+ as word dictionary.
+\end_layout
+
+\begin_layout Standard
+Here we test the performance of Porter Stemmer and WordNet Lemmatizer.
+ The WordNet Lemmatizer performs a litter better, however, it is much slower
+ than stem.
+ At last we decide to choose Porter stemmer.
+\end_layout
+
+\begin_layout Subsubsection*
+1.2.3 Spell Correct
+\end_layout
+
+\begin_layout Standard
+Spell check is performed before stopwords removal and stemmer.
+ However, it is worth discussing on the tolerance rate of wrong word.
+\end_layout
+
+\begin_layout Itemize
+Word Check: We need to check if a word is correct spelled.
+ Wordnet or NLTK is not fit for this situation.
+ Enchant package is widely used here.
+\end_layout
+
+\begin_layout Itemize
+Edit Distance for possible correction: We assume the edit distance of correct
+ word and raw word is at most 1.
+ There are following possibility to correct a word.
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Insert a letter or single quote (e.g.
+ 
+\begin_inset Quotes eld
+\end_inset
+
+dont->don't
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Enumerate
+delete a letter
+\end_layout
+
+\begin_layout Enumerate
+replace a letter
+\end_layout
+
+\begin_layout Enumerate
+transfer position of adjacent letter
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Populate high frequency words list: The above step may produce many possible
+ correction.
+ We use a high frequency words list (1200 words including open/close class
+ words) as priority.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+change = []
+\end_layout
+
+\begin_layout Plain Layout
+
+splits = [(word[:i], word[i:]) for i in range(len(word) + 1)]
+\end_layout
+
+\begin_layout Plain Layout
+
+inserts    = [a + c + b for a, b in splits for c in self.alphabet]
+\end_layout
+
+\begin_layout Plain Layout
+
+deletes    = [a + b[1:] for a, b in splits if b]
+\end_layout
+
+\begin_layout Plain Layout
+
+replaces   = [a + c + b[1:] for a, b in splits for c in self.alphabet if
+ b]
+\end_layout
+
+\begin_layout Plain Layout
+
+transposes = [a + b[1] + b[0] + b[2:] for a, b in splits if len(b)>1]
+\end_layout
+
+\begin_layout Plain Layout
+
+changeWords = inserts + deletes + replaces + transposes
+\end_layout
+
+\begin_layout Plain Layout
+
+for word in changeWords:             
+\end_layout
+
+\begin_layout Plain Layout
+
+	if self.spell_dict.check(word) and word in self.hfwords:
+\end_layout
+
+\begin_layout Plain Layout
+
+		return word
+\end_layout
+
+\begin_layout Plain Layout
+
+for word in changeWords:
+\end_layout
+
+\begin_layout Plain Layout
+
+	if self.spell_dict.check(word):
+\end_layout
+
+\begin_layout Plain Layout
+
+		return word
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+1.3 Non-domain check
+\end_layout
+
+\begin_layout Standard
+In the 5-way classification, non-domain answer is very different from other
+ four classes.
+ Therefore we check it independently.
+\end_layout
+
+\begin_layout Standard
+First we check the definition of non_domain: if the student answer expresses
+ a request for help, frustration or lack of domain knowledge - e.g., "I don't
+ know", "as the book says", "you are stupid".
+\end_layout
+
+\begin_layout Standard
+From the definition and analysis of all non-domain rating answers, we find
+ that the unigram corpus and bigram corpus of the all possible non-domain
+ answers are limited.
+ We populate the corpus with all non-domain answers and some ordinary conversati
+on sentences(Asking for help or blame).
+ 
+\end_layout
+
+\begin_layout Standard
+Then we can check if the student answer to be tested is nearly the composition
+ of the unigram corpus and bigram corpus.
+ If so, we say it is non-domain.
+\end_layout
+
+\begin_layout Standard
+The method reaches a relative high score on train set.
+ The recall is 95% and the accuracy is 85%.
+\end_layout
+
+\end_body
+\end_document
