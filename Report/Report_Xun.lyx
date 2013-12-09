@@ -1,0 +1,869 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 1
+\use_mathdots 1
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Part*
+1.
+ Word Sense Based Sentence Semantic Similarity Measurement
+\end_layout
+
+\begin_layout Section*
+1.1 Basic Idea
+\end_layout
+
+\begin_layout Standard
+To measure the similarity between 2 sentences plays a major role in SRA
+ system.
+ But as a unsolved problem in NLP, there are many possible but not prefect
+ approaches to accomplish that.
+ Our team decided to use Word Sense Based Similarity measurement for the
+ reasons listed:
+\end_layout
+
+\begin_layout Enumerate
+Student answers are short corpus focused on the same topic, which makes
+ the traditional latent semantic analyze powerless.
+ However, this feature guarantees the limited size of word senses used in
+ the sentences because they are trying to answer the same question.
+ Therefore, to compare the word senses of each sentences could be a good
+ approach to determine if 2 short sentences are similar.
+\end_layout
+
+\begin_layout Enumerate
+Word Sense Based Similarity is technically possible because Wordnet provides
+ estimated distance between word senses.
+\end_layout
+
+\begin_layout Standard
+Here are the steps for computing semantic similarity between two sentences:
+\end_layout
+
+\begin_layout Enumerate
+First, each sentence is partitioned into a list of tokens.
+ 
+\end_layout
+
+\begin_layout Enumerate
+Find the most appropriate sense for every word in a sentence (Word Sense
+ Disambiguation).
+ 
+\end_layout
+
+\begin_layout Enumerate
+Finally, compute the similarity of the sentences based on the similarity
+ of the pairs of words.
+\end_layout
+
+\begin_layout Section*
+1.2 Naive WSD
+\end_layout
+
+\begin_layout Standard
+The simplest way of WSD is to use Stanford parser to create POS tags assisting
+ Wordnet to determine the most possible senses of a word in sentences.
+ But our team disposed this approach because 1) Stanford parser could seriously
+ compromise the performance of our system.
+ Because our system is written in Python and has to use a bridge to communicate
+ with Stanford parser which is written in Java.
+ 2) Most of the POS tags Stanford parser uses is not supported in Wordnet.
+ 
+\end_layout
+
+\begin_layout Paragraph
+Assumption: words belong to similar word senses tend to be tagged with the
+ same POS tag.
+\end_layout
+
+\begin_layout Standard
+This assumption is straightforward.
+ For example: if word senses of 
+\begin_inset Quotes eld
+\end_inset
+
+play
+\begin_inset Quotes erd
+\end_inset
+
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+drama
+\begin_inset Quotes erd
+\end_inset
+
+ are similar, then 
+\begin_inset Quotes eld
+\end_inset
+
+play
+\begin_inset Quotes erd
+\end_inset
+
+ is probable a noun, and if word senses of 
+\begin_inset Quotes eld
+\end_inset
+
+play
+\begin_inset Quotes erd
+\end_inset
+
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+perform
+\begin_inset Quotes erd
+\end_inset
+
+ are similar, then 
+\begin_inset Quotes eld
+\end_inset
+
+play
+\begin_inset Quotes erd
+\end_inset
+
+ is probable a verb.
+ And based on this assumption, a naive WSD algorithm only works on assisting
+ calculating semantic similarity has been created:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+Algorithm: find most appropriate POS for wordX in sentence X
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset line
+LatexCommand rule
+offset "0.5ex"
+width "100col%"
+height "1pt"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+similarity=0.0
+\end_layout
+
+\begin_layout Plain Layout
+bestPOS=None
+\end_layout
+
+\begin_layout Plain Layout
+For wordY in Sentense Y:
+\end_layout
+
+\begin_layout Plain Layout
+--For POS in {Noun,Verb,Adv,Adj}//4 pos tags supported in 
+\end_layout
+
+\begin_layout Plain Layout
+--//Wordnet and have greatest semantic influence
+\end_layout
+
+\begin_layout Plain Layout
+--senseX=wordnet.synsets(wordX, pos=POS)
+\end_layout
+
+\begin_layout Plain Layout
+--senseY=wordnet.synsets(wordY, pos=POS)
+\end_layout
+
+\begin_layout Plain Layout
+--if senseX & senseY
+\end_layout
+
+\begin_layout Plain Layout
+---senseDistance=similarity between senseX and senseY
+\end_layout
+
+\begin_layout Plain Layout
+---if senseDistance>similarity
+\end_layout
+
+\begin_layout Plain Layout
+-----similarity = senseDistance
+\end_layout
+
+\begin_layout Plain Layout
+-----bestPOS=POS
+\end_layout
+
+\begin_layout Plain Layout
+return bestPOS
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph*
+Evaluation of this naive approach:
+\end_layout
+
+\begin_layout Standard
+This algorithm works fine when determining the sense of a word which has
+ a word with similar sense in the other sentence, but does not make any
+ sense on a word having no similar word in the other sentence.
+ Because a word having no similar word in the other sentence will have no
+ positive influence on the similarity of the 2 sentences, so this naive
+ method is able to function in Word Sense Based Sentence Semantic Similarity
+ Measurement.
+\end_layout
+
+\begin_layout Section*
+1.3 Compute the similarity of the sentences based on the similarity of the
+ pairs of words
+\end_layout
+
+\begin_layout Standard
+Building a semantic similarity relative matrix R[m, n] of each pair of word
+ senses, where R[i, j] is the semantic similarity between the most appropriate
+ sense of word at position i of X and the most appropriate sense of word
+ at position j of Y.
+ Thus, R[i,j] is also the weight of the edge connecting from i to j.
+ Because this matrix stores the similarity of each pair of words from these
+ 2 sentences, so it is actually like a bipartite graph.
+ And therefore we formulate the problem of capturing semantic similarity
+ between sentences as the problem of computing a maximum total matching
+ weight of a bipartite graph, where X and Y are two sets of disjoint nodes.
+ We use the Hungarian method to solve this problem.
+ A simple fast heuristic method is presented as follows:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+Algorithm: Compute sentence similarity score
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset line
+LatexCommand rule
+offset "0.5ex"
+width "100col%"
+height "1pt"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Float sentenceSemanticSimilarity(X,Y,POS_X,weightX){
+\end_layout
+
+\begin_layout Plain Layout
+--//initial weight matrix
+\end_layout
+
+\begin_layout Plain Layout
+--R=Float[len(X)][len(Y)];
+\end_layout
+
+\begin_layout Plain Layout
+--for X[i] in X{
+\end_layout
+
+\begin_layout Plain Layout
+---for Y[j] in Y{
+\end_layout
+
+\begin_layout Plain Layout
+-----senseX=wordnet.getSense(X[i],POS_X[i]);
+\end_layout
+
+\begin_layout Plain Layout
+-----senseY=wordnet.getSense(Y[i],POS_X[j]);
+\end_layout
+
+\begin_layout Plain Layout
+-----if (senseX & senseY){
+\end_layout
+
+\begin_layout Plain Layout
+------similarity=senseX.getSimilarity(senseY);
+\end_layout
+
+\begin_layout Plain Layout
+------if (similarity>R[i][j]){
+\end_layout
+
+\begin_layout Plain Layout
+--------R[i][j]=similarity;
+\end_layout
+
+\begin_layout Standard
+------}
+\end_layout
+
+\begin_layout Plain Layout
+-----}
+\end_layout
+
+\begin_layout Standard
+---}
+\end_layout
+
+\begin_layout Standard
+--}
+\end_layout
+
+\begin_layout Plain Layout
+--return computeSimilaruty(R,weightX);
+\end_layout
+
+\begin_layout Standard
+}
+\end_layout
+
+\begin_layout Plain Layout
+---
+\end_layout
+
+\begin_layout Plain Layout
+Float computeSimilarity(R,weightX){
+\end_layout
+
+\begin_layout Plain Layout
+--ScoreSum = 0;
+\end_layout
+
+\begin_layout Plain Layout
+--foreach (X[i] in X){ 
+\end_layout
+
+\begin_layout Plain Layout
+---bestCandidate = -1; 
+\end_layout
+
+\begin_layout Plain Layout
+---bestScore = -maxInt; 
+\end_layout
+
+\begin_layout Plain Layout
+---foreach (Y[j] in Y){
+\end_layout
+
+\begin_layout Plain Layout
+-----if (Y[j] is still free && R[i, j] > bestScore){
+\end_layout
+
+\begin_layout Plain Layout
+------bestScore = R[i, j]; 
+\end_layout
+
+\begin_layout Plain Layout
+------bestCandidate = j; 
+\end_layout
+
+\begin_layout Plain Layout
+-----} 
+\end_layout
+
+\begin_layout Plain Layout
+---}
+\end_layout
+
+\begin_layout Plain Layout
+---if (bestCandidate != -1){
+\end_layout
+
+\begin_layout Plain Layout
+-----mark the bestCandidate as matched item.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+-----scoreSum = scoreSum + bestScore*weightX[i]; 
+\end_layout
+
+\begin_layout Plain Layout
+---} 
+\end_layout
+
+\begin_layout Plain Layout
+--}
+\end_layout
+
+\begin_layout Plain Layout
+--return ScoreSum
+\end_layout
+
+\begin_layout Plain Layout
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph*
+Adjust the weight of each word
+\end_layout
+
+\begin_layout Standard
+Because not every word has equal influence on the semantic level of sentence,
+ we have to estimate each word's weight.
+ In this case, we use plsa to extract top 2 topics of all reference answers
+ of that question where X and Y are trying to answer and use that 2 word
+ vectors to compute word weights and apply them in the algorithm above as
+ weightX.
+\end_layout
+
+\begin_layout Part*
+2.
+ Handle special cases
+\end_layout
+
+\begin_layout Standard
+The approach we described by now is only able to handle some most general
+ cases, but it works poorly on special cases like non-demain and contradictory.
+ So we design corresponding algorithm for detecting non-domain and contradictory.
+\end_layout
+
+\begin_layout Section*
+2.1 Contradictory Detection
+\end_layout
+
+\begin_layout Standard
+Contradictory has one or a few of features listed below:
+\end_layout
+
+\begin_layout Enumerate
+Contradictory resulted from negative words: 
+\begin_inset Quotes eld
+\end_inset
+
+I 
+\begin_inset Formula $\mathit{don't}$
+\end_inset
+
+ like him
+\begin_inset Quotes erd
+\end_inset
+
+; 
+\begin_inset Quotes eld
+\end_inset
+
+Dog is 
+\begin_inset Formula $\mathit{not}$
+\end_inset
+
+ as cute as cat
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Enumerate
+Contradictory resulted from antonym: 
+\begin_inset Quotes eld
+\end_inset
+
+The dog is 
+\begin_inset Formula $\mathit{good}$
+\end_inset
+
+
+\begin_inset Quotes erd
+\end_inset
+
+ vs 
+\begin_inset Quotes eld
+\end_inset
+
+The dog is 
+\begin_inset Formula $\mathit{bad}$
+\end_inset
+
+
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Enumerate
+Contradictory resulted from different seq.
+ of words: 
+\begin_inset Quotes eld
+\end_inset
+
+A 
+\begin_inset Formula $\mathit{dog}$
+\end_inset
+
+ is larger than a 
+\begin_inset Formula $\mathit{cat}$
+\end_inset
+
+
+\begin_inset Quotes erd
+\end_inset
+
+ vs 
+\begin_inset Quotes eld
+\end_inset
+
+A 
+\begin_inset Formula $\mathit{cat}$
+\end_inset
+
+ is larger than a 
+\begin_inset Formula $\mathit{dog}$
+\end_inset
+
+
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For case 1, Stanford parser can find out all negative words and the word
+ it denies.
+ And case 2 can be handled by Wordnet.
+ Finally, bigram is applied to detect case 3.
+ Case 1 and case 2 are better to be handled at the same time because both
+ stanford parser and wordnet are semantic based approaches.
+ And because bigram is a probabilistic approach, case 3 supposed to be handled
+ separately.
+\end_layout
+
+\begin_layout Paragraph*
+---
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status collapsed
+
+\begin_layout Plain Layout
+Algorithm: Contradictory Detection of case 1&2
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset line
+LatexCommand rule
+offset "0.5ex"
+width "100col%"
+height "1pt"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+bool isContradictory(X,Y){
+\end_layout
+
+\begin_layout Plain Layout
+--//count if there are odd number of negative words in 
+\end_layout
+
+\begin_layout Plain Layout
+--//X
+\end_layout
+
+\begin_layout Plain Layout
+--xFlag=neg_count(X)%2==1;
+\end_layout
+
+\begin_layout Plain Layout
+--//remove all negative words in X
+\end_layout
+
+\begin_layout Plain Layout
+--X=removeNeg(X);
+\end_layout
+
+\begin_layout Plain Layout
+--yFlag=neg_count(Y)%2==1;
+\end_layout
+
+\begin_layout Plain Layout
+--Y=removeNeg(Y);
+\end_layout
+
+\begin_layout Plain Layout
+--//count the number of pairs of antonyms 
+\end_layout
+
+\begin_layout Plain Layout
+--//extracted from each of X and Y
+\end_layout
+
+\begin_layout Plain Layout
+--anFlag=countAntonymPair(X,Y)%2==1;
+\end_layout
+
+\begin_layout Plain Layout
+--//replace antonyms of words in X in Y with their 
+\end_layout
+
+\begin_layout Plain Layout
+--//corresponding words in X
+\end_layout
+
+\begin_layout Plain Layout
+--replaceAntonym(X,Y);
+\end_layout
+
+\begin_layout Plain Layout
+--if(anFlag)
+\end_layout
+
+\begin_layout Plain Layout
+---yFlag=not yFlag;
+\end_layout
+
+\begin_layout Plain Layout
+--similarFlag=False;
+\end_layout
+
+\begin_layout Plain Layout
+--POS_X=posTagging(X,Y);
+\end_layout
+
+\begin_layout Plain Layout
+--weightX=plsaModel.generateWeightVector(X);
+\end_layout
+
+\begin_layout Plain Layout
+--if(sentenceSemanticSimilarity(X,Y,POS_X,weightX)>threshold){
+\end_layout
+
+\begin_layout Plain Layout
+---similarFlag=True;
+\end_layout
+
+\begin_layout Standard
+--}
+\end_layout
+
+\begin_layout Plain Layout
+--if ((xFlag!=yFlag) && similarFlag) return True
+\end_layout
+
+\begin_layout Plain Layout
+--return False;
+\end_layout
+
+\begin_layout Standard
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph*
+---
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status collapsed
+
+\begin_layout Plain Layout
+Algorithm: Contradictory Detection of case 3
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset line
+LatexCommand rule
+offset "0.5ex"
+width "100col%"
+height "1pt"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Foreach question:
+\end_layout
+
+\begin_layout Plain Layout
+--create bigram of reference answers and correct answers and store the word
+ pairs in PositiveSet
+\end_layout
+
+\begin_layout Plain Layout
+--create bigram of contradictory answers and store the word pairs in NegativeSet
+\end_layout
+
+\begin_layout Plain Layout
+--ContradictoryFeatureSet=NegativeSet-PositiveSet
+\end_layout
+
+\begin_layout Plain Layout
+--model[question]=ContradictoryFeatureSet
+\end_layout
+
+\begin_layout Plain Layout
+---
+\end_layout
+
+\begin_layout Plain Layout
+bool isContradictory(question,answer){
+\end_layout
+
+\begin_layout Standard
+--bigram=createBigram(answer).key_set();
+\end_layout
+
+\begin_layout Plain Layout
+--for word_pair in bigram{
+\end_layout
+
+\begin_layout Standard
+---if(model[question].contains(word_pair)) return True;
+\end_layout
+
+\begin_layout Plain Layout
+--}
+\end_layout
+
+\begin_layout Plain Layout
+--return False;
+\end_layout
+
+\begin_layout Plain Layout
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph*
+Evaluation:
+\end_layout
+
+\begin_layout Standard
+Without special handle of contradictory, only 8% of contradictory can be
+ recognized.
+ But after special handle for contradictory is deployed, this rate has been
+ raised to 42% on test set.
+\end_layout
+
+\end_body
+\end_document
