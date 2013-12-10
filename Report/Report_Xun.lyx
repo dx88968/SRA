@@ -59,6 +59,14 @@
 
 \begin_body
 
+\begin_layout Title
+Report on Implementation of Highly Reliable SRA System
+\end_layout
+
+\begin_layout Author
+Xun Xu, Guanhua Chen, Pengfei Li 
+\end_layout
+
 \begin_layout Part*
 1.
  Word Sense Based Sentence Semantic Similarity Measurement
@@ -101,8 +109,8 @@ First, each sentence is partitioned into a list of tokens.
 \end_layout
 
 \begin_layout Enumerate
-Find the most appropriate sense for every word in a sentence (Word Sense
- Disambiguation).
+Then find the most appropriate sense for every word in a sentence (Word
+ Sense Disambiguation).
  
 \end_layout
 
@@ -225,7 +233,7 @@ bestPOS=None
 \end_layout
 
 \begin_layout Plain Layout
-For wordY in Sentense Y:
+For wordY in Sentence Y:
 \end_layout
 
 \begin_layout Plain Layout
@@ -381,7 +389,7 @@ Float sentenceSemanticSimilarity(X,Y,POS_X,weightX){
 --------R[i][j]=similarity;
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 ------}
 \end_layout
 
@@ -389,11 +397,11 @@ Float sentenceSemanticSimilarity(X,Y,POS_X,weightX){
 -----}
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 ---}
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 --}
 \end_layout
 
@@ -401,7 +409,7 @@ Float sentenceSemanticSimilarity(X,Y,POS_X,weightX){
 --return computeSimilaruty(R,weightX);
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 }
 \end_layout
 
@@ -619,8 +627,16 @@ For case 1, Stanford parser can find out all negative words and the word
  Finally, bigram is applied to detect case 3.
  Case 1 and case 2 are better to be handled at the same time because both
  stanford parser and wordnet are semantic based approaches.
- And because bigram is a probabilistic approach, case 3 supposed to be handled
- separately.
+ And because 
+\begin_inset Quotes eld
+\end_inset
+
+bigram
+\begin_inset Quotes erd
+\end_inset
+
+ style co-occurance vector based contraditory detection is a probabilistic
+ approach, case 3 supposed to be handled separately.
 \end_layout
 
 \begin_layout Paragraph*
@@ -741,7 +757,7 @@ bool isContradictory(X,Y){
 ---similarFlag=True;
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 --}
 \end_layout
 
@@ -753,7 +769,7 @@ bool isContradictory(X,Y){
 --return False;
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 }
 \end_layout
 
@@ -825,7 +841,7 @@ Foreach question:
 bool isContradictory(question,answer){
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 --bigram=createBigram(answer).key_set();
 \end_layout
 
@@ -833,7 +849,7 @@ bool isContradictory(question,answer){
 --for word_pair in bigram{
 \end_layout
 
-\begin_layout Standard
+\begin_layout Plain Layout
 ---if(model[question].contains(word_pair)) return True;
 \end_layout
 
@@ -863,6 +879,357 @@ Without special handle of contradictory, only 8% of contradictory can be
  recognized.
  But after special handle for contradictory is deployed, this rate has been
  raised to 42% on test set.
+\end_layout
+
+\begin_layout Section*
+2.2 Non-domain check
+\end_layout
+
+\begin_layout Standard
+In the 5-way classification, non-domain answer is very different from other
+ four classes.
+ Therefore we check it independently.
+ First we check the definition of non_domain: if the student answer expresses
+ a request for help, frustration or lack of domain knowledge - e.g., "I don't
+ know", "as the book says", "you are stupid".
+ From the definition and analysis of all non-domain rating answers, we find
+ that the unigram corpus and bigram corpus of the all possible non-domain
+ answers are limited.
+ We populate the corpus with all non-domain answers and some ordinary conversati
+on sentences(Asking for help or blame).
+ Then we can check if the student answer to be tested is nearly the composition
+ of the unigram corpus and bigram corpus.
+ If so, we say it is non-domain.
+\end_layout
+
+\begin_layout Paragraph
+Evaluation:
+\end_layout
+
+\begin_layout Standard
+The method reaches a relative high score on train set.
+ The recall is 95% and the accuracy is 85%.
+\end_layout
+
+\begin_layout Part*
+3.
+ Implementation details
+\end_layout
+
+\begin_layout Section*
+3.1 Preprocess the dataset
+\end_layout
+
+\begin_layout Subsection*
+3.1.1 Text Normalization
+\end_layout
+
+\begin_layout Subsubsection*
+3.1.1.1 Tokenize
+\end_layout
+
+\begin_layout Standard
+Stopwords and pronunciation should be removed before the train model.
+ Here we use NLTK stopwords corpus and tokenizer package to do this.
+ 
+\end_layout
+
+\begin_layout Subsubsection*
+3.1.1.2 Stem/Lemmatize
+\end_layout
+
+\begin_layout Standard
+Stem or Lemmatize should be applied before building word matrix as well
+ as word dictionary.
+\end_layout
+
+\begin_layout Standard
+Here we test the performance of Porter Stemmer and WordNet Lemmatizer.
+ The WordNet Lemmatizer performs a litter better, however, it is much slower
+ than stem.
+ At last we decide to choose Porter stemmer.
+\end_layout
+
+\begin_layout Subsubsection*
+3.1.1.3 Spell Correct
+\end_layout
+
+\begin_layout Standard
+Spell check is performed before stopwords removal and stemmer.
+ However, it is worth discussing on the tolerance rate of wrong word.
+\end_layout
+
+\begin_layout Itemize
+Word Check: We need to check if a word is correct spelled.
+ Wordnet or NLTK is not fit for this situation.
+ Enchant package is widely used here.
+\end_layout
+
+\begin_layout Itemize
+Edit Distance for possible correction: We assume the edit distance of correct
+ word and raw word is at most 1.
+ There are following possibility to correct a word.
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Insert a letter or single quote (e.g.
+ 
+\begin_inset Quotes eld
+\end_inset
+
+dont->don't
+\begin_inset Quotes erd
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Enumerate
+delete a letter
+\end_layout
+
+\begin_layout Enumerate
+replace a letter
+\end_layout
+
+\begin_layout Enumerate
+transfer position of adjacent letter
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Populate high frequency words list: The above step may produce many possible
+ correction.
+ We use a high frequency words list (1200 words including open/close class
+ words) as priority.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+change = []
+\end_layout
+
+\begin_layout Plain Layout
+
+splits = [(word[:i], word[i:]) for i in range(len(word) + 1)]
+\end_layout
+
+\begin_layout Plain Layout
+
+inserts    = [a + c + b for a, b in splits for c in self.alphabet]
+\end_layout
+
+\begin_layout Plain Layout
+
+deletes    = [a + b[1:] for a, b in splits if b]
+\end_layout
+
+\begin_layout Plain Layout
+
+replaces   = [a + c + b[1:] for a, b in splits for c in self.alphabet if
+ b]
+\end_layout
+
+\begin_layout Plain Layout
+
+transposes = [a + b[1] + b[0] + b[2:] for a, b in splits if len(b)>1]
+\end_layout
+
+\begin_layout Plain Layout
+
+changeWords = inserts + deletes + replaces + transposes
+\end_layout
+
+\begin_layout Plain Layout
+
+for word in changeWords:             
+\end_layout
+
+\begin_layout Plain Layout
+
+	if self.spell_dict.check(word) and word in self.hfwords:
+\end_layout
+
+\begin_layout Plain Layout
+
+		return word
+\end_layout
+
+\begin_layout Plain Layout
+
+for word in changeWords:
+\end_layout
+
+\begin_layout Plain Layout
+
+	if self.spell_dict.check(word):
+\end_layout
+
+\begin_layout Plain Layout
+
+		return word
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+3.2 Training Procedure
+\end_layout
+
+\begin_layout Enumerate
+Preprocess the data
+\end_layout
+
+\begin_layout Enumerate
+Create word weight vector using plsa for each question on its reference
+ answers
+\end_layout
+
+\begin_layout Enumerate
+Create 
+\begin_inset Quotes eld
+\end_inset
+
+bigram
+\begin_inset Quotes erd
+\end_inset
+
+ style co-occurrence vector for each question
+\end_layout
+
+\begin_layout Enumerate
+Train non-domain detection model
+\end_layout
+
+\begin_layout Enumerate
+For each student answer:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+non-domain detection
+\end_layout
+
+\begin_layout Enumerate
+contradictory detection
+\end_layout
+
+\begin_layout Enumerate
+Apply Word Sense Based Sentence Semantic Similarity Measurement between
+ this answer and each reference answer, use the greatest similarity score
+ as this answer's score
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Collect answer scores and their correct accuracy, determine the best boundaries
+ of 
+\begin_inset Quotes eld
+\end_inset
+
+irrelevant
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+partial_correct_incomplete
+\begin_inset Quotes erd
+\end_inset
+
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+correct
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+3.3 Apply this model on test set
+\end_layout
+
+\begin_layout Enumerate
+Preprocess the data
+\end_layout
+
+\begin_layout Enumerate
+For each student answer:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+check if the answer belongs to non-domain, if yes, grade this answer as
+ non-domain, continue on next answer
+\end_layout
+
+\begin_layout Enumerate
+check if the answer belongs to contradictory, if yes, grade this answer
+ as contradictory, continue on next answer
+\end_layout
+
+\begin_layout Enumerate
+Apply Word Sense Based Sentence Semantic Similarity Measurement between
+ this answer and each reference answer, use the greatest similarity score
+ as this answer's score
+\end_layout
+
+\begin_layout Enumerate
+Grade this answer beased on its score and boundaries of 
+\begin_inset Quotes eld
+\end_inset
+
+irrelevant
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+partial_correct_incomplete
+\begin_inset Quotes erd
+\end_inset
+
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+correct
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Part*
+4.
+ Future works
+\end_layout
+
+\begin_layout Standard
+First of all, find more accurate algorithm to determine word weights in
+ a sentence other than PLSA which has similar performance with simple unigram
+ approach.
+ And instead of apply the same boundaries of score to all the answers, we
+ are sure that training different boundaries for each question could improve
+ performance because we observed different best boundaries of score on different
+ questions.
 \end_layout
 
 \end_body
