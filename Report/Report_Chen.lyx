@@ -1,0 +1,245 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 1
+\use_mathdots 1
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Part*
+1.
+ Negative Sense and Antonym 
+\end_layout
+
+\begin_layout Section*
+1.1 Basic Idea
+\end_layout
+
+\begin_layout Standard
+In our langue, usually contain many negative sense word and antonyms.
+ Two sentence can have very different component but have similar meaning.
+ Le's say:
+\end_layout
+
+\begin_layout Itemize
+He is clever.
+\end_layout
+
+\begin_layout Itemize
+He is not stupid.
+\end_layout
+
+\begin_layout Standard
+This two sentences have similar meaning(Although 
+\begin_inset Quotes eld
+\end_inset
+
+not stupid
+\begin_inset Quotes erd
+\end_inset
+
+ not mean clever, it is not opposite meaning).
+ In this project, we need to deal with large amount question/answer pairs.
+ It is reasonable to assume that the corpus will contain negative sense
+ word and antonyms.
+ We need to modify the sentences which will let them comparable.
+ The object is modify the antonym and get the sense of the sentence.
+\end_layout
+
+\begin_layout Section*
+1.2 Approach
+\end_layout
+
+\begin_layout Subsubsection*
+1.2.1 StanfordParser
+\end_layout
+
+\begin_layout Standard
+StanfordParser can provide the structure of sentences.
+ In this project, we use it to get the Typed dependencies which can let
+ us know the negative sense.
+ 
+\begin_inset Newline newline
+\end_inset
+
+Typed dependencies of 
+\begin_inset Quotes eld
+\end_inset
+
+He is not stupid.
+\begin_inset Quotes erd
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+nsubj(stupid-4, He-1) 
+\end_layout
+
+\begin_layout Standard
+cop(stupid-4, is-2) 
+\end_layout
+
+\begin_layout Standard
+neg(stupid-4, not-3) 
+\end_layout
+
+\begin_layout Standard
+root(ROOT-0, stupid-4)
+\begin_inset Newline newline
+\end_inset
+
+Using the Typed dependencies, we can know that 
+\begin_inset Quotes eld
+\end_inset
+
+not
+\begin_inset Quotes erd
+\end_inset
+
+(depend) deny 
+\begin_inset Quotes eld
+\end_inset
+
+stupid
+\begin_inset Quotes erd
+\end_inset
+
+(govern word).
+\end_layout
+
+\begin_layout Subsubsection*
+1.2.2 WordNet
+\end_layout
+
+\begin_layout Standard
+Using StanfordParser we have get the negative sense, then we using WordNet
+ to get the antonym of a word.
+ Since for a word, it have many different sense.
+ We using it's first sense to get the antonym.
+\end_layout
+
+\begin_layout Subsubsection*
+1.2.3 HandleAntonym
+\end_layout
+
+\begin_layout Standard
+We have get the typed dependencies and the antonyms, the final step is to
+ get a result.
+ Our approach have following steps:
+\end_layout
+
+\begin_layout Itemize
+Get the typed dependencies of a sentence.
+\end_layout
+
+\begin_layout Itemize
+Find the negative senses.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+If the govern word is not a verb, replace this word with it's antonym and
+ remove it's depend word(which is 'not').
+\end_layout
+
+\begin_layout Itemize
+If the govern word is a verb, add 1 to the NOTCOUNTER.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Return NOTCOUNTER%2 and the new sentence.
+\end_layout
+
+\begin_layout Part*
+2 Implement and Deploy
+\end_layout
+
+\begin_layout Standard
+The primary part of this project are written in python.
+ We have used the following library:
+\end_layout
+
+\begin_layout Itemize
+nltk with all data
+\end_layout
+
+\begin_layout Itemize
+py4j
+\end_layout
+
+\begin_layout Itemize
+pyenchant
+\end_layout
+
+\begin_layout Itemize
+numpy
+\end_layout
+
+\begin_layout Itemize
+scipy
+\end_layout
+
+\begin_layout Standard
+Ant we wrote a simply port for StanfordParser, it is using socket to communicate
+ with python program.
+ The target machine need to install all the Dependences.
+\end_layout
+
+\end_body
+\end_document
