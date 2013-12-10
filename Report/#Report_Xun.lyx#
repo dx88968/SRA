@@ -1277,47 +1277,7 @@ microaverage                 0.5490251 0.5388889 0.5399240
 
 \begin_layout Plain Layout
 
-beetle test set:
-\end_layout
-
-\begin_layout Plain Layout
-
-                             precision    recall  fmeasure
-\end_layout
-
-\begin_layout Plain Layout
-
-correct                      0.6627451 0.7752294 0.7145877
-\end_layout
-
-\begin_layout Plain Layout
-
-partially_correct_incomplete 0.3636364 0.4000000 0.3809524
-\end_layout
-
-\begin_layout Plain Layout
-
-contradictory                0.5132743 0.3945578 0.4461538
-\end_layout
-
-\begin_layout Plain Layout
-
-irrelevant                   0.0000000 0.0000000 0.0000000
-\end_layout
-
-\begin_layout Plain Layout
-
-non_domain                   0.7666667 0.8518519 0.8070175
-\end_layout
-
-\begin_layout Plain Layout
-
-macroaverage                 0.4612645 0.4843278 0.4697423
-\end_layout
-
-\begin_layout Plain Layout
-
-microaverage                 0.5396726 0.5653846 0.5481903
+beetle test set
 \end_layout
 
 \end_inset
