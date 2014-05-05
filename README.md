@@ -1,7 +1,7 @@
-#NLP
+#Semeval 2013 task 7-THE STUDENT RESPONSE ANALYSIS
 ##Members
-* Pengfei Li
 * Xun Xu
+* Pengfei Li
 * Guanhua Chen
 
 ##Running on our Server
